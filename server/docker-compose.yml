@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    environment:
+      TRUST_PROXY: "true"        # requests arrive through Caddy below
+    volumes:
+      - ioniq6_data:/data        # session (device id + token) and auto-lock settings
+    restart: unless-stopped
+
+  caddy:                         # HTTPS with an automatic Let's Encrypt certificate
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  ioniq6_data:
+  caddy_data:
+  caddy_config:

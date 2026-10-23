@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon foreground: a lock over a pool of light. 108dp canvas, art inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#338FD3FF"
+        android:pathData="M30,76 a24,5 0 1,0 48,0 a24,5 0 1,0 -48,0 z"/>
+    <path android:strokeColor="#8FD3FF" android:strokeWidth="4.5" android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M44,49 L44,42 A10,10 0 0,1 64,42 L64,49"/>
+    <path android:fillColor="#8FD3FF"
+        android:pathData="M41,49 L67,49 A5,5 0 0,1 72,54 L72,68 A5,5 0 0,1 67,73 L41,73 A5,5 0 0,1 36,68 L36,54 A5,5 0 0,1 41,49 Z"/>
+    <path android:fillColor="#0D121B"
+        android:pathData="M54,57 A3,3 0 1,1 53.99,57 Z M52.6,60 L55.4,60 L55.4,65.5 L52.6,65.5 Z"/>
+</vector>

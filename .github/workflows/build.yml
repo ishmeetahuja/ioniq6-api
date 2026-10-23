@@ -1,0 +1,192 @@
+name: Build
+
+# Every push and pull request builds and tests everything.
+# A release — GitHub Release (APK + firmware + checksums) and the server image as :1.2.3 and :latest —
+# happens when you either push a tag "v1.2.3", or click Actions → Build → Run workflow and type a
+# version. Pushes to main publish the server image as :edge only.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Publish a release with this version, e.g. 1.0.0 (leave empty to just build)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/server
+  # "v1.2.3" when this run is a release, else empty
+  RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.version && format('v{0}', inputs.version) || '' }}
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Release signing key (from secrets; skipped when they aren't set, e.g. in forks)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          elif [ -n "$RELEASE_TAG" ]; then
+            echo "::error::A release needs the ANDROID_KEYSTORE_B64 secret (see CONTRIBUTING.md → Releases)."
+            exit 1
+          else
+            echo "::notice::No signing secrets: building with the debug key (fine for testing)."
+          fi
+      - name: Build APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$RELEASE_TAG" ]; then export APP_VERSION="${RELEASE_TAG#v}"; fi
+          gradle -p android assembleRelease --stacktrace
+          cp android/app/build/outputs/apk/release/app-release.apk walkaway-lock.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: walkaway-lock.apk
+
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-${{ hashFiles('firmware/platformio.ini') }}
+      - name: Install PlatformIO
+        run: pip install platformio "esptool<5"
+      - name: Build firmware
+        run: pio run -d firmware
+      - name: Merge into one file (flash at address 0x0)
+        run: |
+          B=firmware/.pio/build/esp32dev
+          python -m esptool --chip esp32 merge_bin -o esp32-car-tag.bin \
+            --flash_mode dio --flash_freq 40m --flash_size 4MB \
+            0x1000 $B/bootloader.bin \
+            0x8000 $B/partitions.bin \
+            0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+            0x10000 $B/firmware.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: esp32-car-tag.bin
+
+  server:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: |
+          node --check server/server.js && node --check server/lib/bluelink-ca.js && node --check server/ioniq6.js
+          bash -n server/install.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Server tests (against a mock BlueLink; ~2 min)
+        run: bash server/test/run.sh
+      - name: Smoke test the image
+        run: |
+          docker build -t ioniq6-api server
+          docker run -d --name smoke -p 8080:8080 \
+            -e ADMIN_TOKEN=$(openssl rand -hex 24) -e BLUELINK_USERNAME=a -e BLUELINK_PASSWORD=b -e BLUELINK_PIN=1234 \
+            ioniq6-api
+          for i in $(seq 1 20); do curl -fsS localhost:8080/healthz && break; sleep 1; done
+          docker logs smoke
+          curl -fsS localhost:8080/healthz
+          docker run --rm ioniq6-api cat /app/install.sh | head -3
+      - name: Image tags
+        id: tags
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ -n "$RELEASE_TAG" ]; then
+            echo "list=${IMAGE}:${RELEASE_TAG#v},${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "list=${IMAGE}:edge" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-qemu-action@v3
+        if: github.event_name != 'pull_request'
+      - uses: docker/setup-buildx-action@v3
+        if: github.event_name != 'pull_request'
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        if: github.event_name != 'pull_request'
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: server
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.tags.outputs.list }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=BlueLink Canada API server with walk-away auto-lock
+            org.opencontainers.image.licenses=GPL-3.0-only
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.version != ''
+    needs: [android, firmware, server]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: CHANGELOG.md
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ env.RELEASE_TAG }}
+        run: |
+          sha256sum walkaway-lock.apk esp32-car-tag.bin > SHA256SUMS.txt
+          # This version's entry from CHANGELOG.md ("## v1.2.3 …" up to the next "---")
+          awk -v t="$TAG" '
+            /^## v/ { on = ($2 == t) }
+            on && /^---$/ { exit }
+            on' CHANGELOG.md | tail -n +2 > notes.md || true
+          [ -s notes.md ] || echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)." > notes.md
+          cat >> notes.md <<EOF
+
+          ---
+          **Install:** \`walkaway-lock.apk\` on your phone (over the old one; settings are kept).
+          **Server:** \`bash install.sh\` in your install folder pulls \`${IMAGE}:latest\`.
+          **ESP32:** flash \`esp32-car-tag.bin\` at address 0x0 only when the notes above say so.
+          Checksums: \`SHA256SUMS.txt\`.
+          EOF
+          gh release create "$TAG" walkaway-lock.apk esp32-car-tag.bin SHA256SUMS.txt \
+            --repo "${{ github.repository }}" --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"

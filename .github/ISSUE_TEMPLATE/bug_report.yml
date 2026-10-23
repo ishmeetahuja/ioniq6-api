@@ -1,0 +1,45 @@
+name: Something isn't working
+description: The car didn't lock, the app can't reach the server, an error…
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! First, have a look at [Troubleshooting](https://github.com/ishmeetahuja/ioniq6-api/blob/main/docs/troubleshooting.md); it covers the common cases.
+        **Never paste passwords, tokens, your PIN, VIN or ntfy topic.** The app log and `doctor` output don't contain them.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: "I walked away from the car at work and it didn't lock. Phone showed 'Parked, watching'…"
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options: [App, Server, ESP32 tag, Installer, Not sure]
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "App v1.0.0 (Android Settings → Apps → Walk-away Lock) · server v1.0.0 · ESP32 firmware from release v1.0.0"
+  - type: input
+    id: setup
+    attributes:
+      label: Car, phone and server
+      placeholder: "2024 IONIQ 6 · Pixel 8, Android 15 · Raspberry Pi 5"
+  - type: textarea
+    id: applog
+    attributes:
+      label: App log (bottom of Settings)
+      description: The lines around when it happened.
+      render: text
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Server health check
+      description: Output of `sudo bash install.sh doctor` in your install folder. You can blank out your server address.
+      render: text

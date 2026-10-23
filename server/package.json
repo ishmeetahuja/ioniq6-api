@@ -1,0 +1,15 @@
+{
+  "name": "ioniq6",
+  "version": "2.1.0",
+  "description": "CLI and HTTP API for a Hyundai IONIQ 6 via BlueLink Canada, with walk-away auto-lock",
+  "bin": {
+    "ioniq6": "ioniq6.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

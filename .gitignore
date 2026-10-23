@@ -1,0 +1,17 @@
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.iml
+.idea/
+# PlatformIO
+firmware/.pio/
+firmware/.vscode/
+
+# Secrets never belong in the repo
+*.jks
+keystore.properties
+**/.env
+server/data/
+*.keystore

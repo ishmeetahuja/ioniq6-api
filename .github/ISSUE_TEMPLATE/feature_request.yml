@@ -1,0 +1,15 @@
+name: Idea or improvement
+description: Something that would make it better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like it to do, and why?
+      placeholder: "When I … I'd like it to … because …"
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Note: features that unlock, start or open the car automatically won't be added. Anything that adds requests to Hyundai needs a good reason (they rate-limit hard).

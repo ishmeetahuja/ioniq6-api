@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/ishmeetahuja/ioniq6-api/blob/main/docs/troubleshooting.md
+    about: Common problems and fixes
+  - name: Security problem
+    url: https://github.com/ishmeetahuja/ioniq6-api/security/advisories/new
+    about: Please report privately, not as a public issue
