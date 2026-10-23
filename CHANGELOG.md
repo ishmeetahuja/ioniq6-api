@@ -15,7 +15,7 @@ What changed in each version, in plain words with examples. Newest first.
 
 ---
 
-## v1.1.0 — Oct 23, 2026
+## v1.0.1 — Oct 23, 2026
 
 **One-click flashing, and more boards for the tag.** ⚠️ Re-flash your tag with this version: the
 app and the tag got new Bluetooth IDs, so a v1.0.0 tag won't be found by the new app.
