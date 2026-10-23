@@ -1,0 +1,10 @@
+{
+  "name": "Walk-away Lock tag",
+  "version": "VERSION",
+  "new_install_prompt_erase": true,
+  "builds": [
+    { "chipFamily": "ESP32", "parts": [{ "path": "esp32-car-tag.bin", "offset": 0 }] },
+    { "chipFamily": "ESP32-C3", "parts": [{ "path": "esp32c3-car-tag.bin", "offset": 0 }] },
+    { "chipFamily": "ESP32-S3", "parts": [{ "path": "esp32s3-car-tag.bin", "offset": 0 }] }
+  ]
+}

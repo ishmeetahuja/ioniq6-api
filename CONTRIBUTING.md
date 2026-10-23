@@ -38,9 +38,10 @@ cd server && docker build -t ioniq6-api .
 and JDK 17. Without signing secrets the APK is signed with the debug key: fine for testing, but it
 won't install over an official release (uninstall first).
 
-**Firmware:** with [PlatformIO](https://platformio.org/), `pio run -d firmware -t upload`. To try
-another board, add an `[env:…]` to `firmware/platformio.ini` (e.g. `board = esp32-c3-devkitm-1`);
-the blue-LED pin may differ.
+**Firmware:** with [PlatformIO](https://platformio.org/), `pio run -d firmware -e esp32dev -t upload`
+(or `-e esp32c3` / `-e esp32s3`). Another board? Add an `[env:…]` to `firmware/platformio.ini` with
+its LED pin (`LED_PIN`, `LED_ACTIVE_LOW`, `LED_RGB`) and a line in `docs/flasher/manifest.json`.
+The tag's Bluetooth IDs in `firmware/src/main.cpp` must match `Ble.SERVICE_UUID` in the app.
 
 Every push and PR runs all of this on GitHub Actions.
 
@@ -71,6 +72,9 @@ Then in GitHub: **Settings → Secrets and variables → Actions → New reposit
 | `ANDROID_KEY_ALIAS` | `walkaway` |
 
 Delete `release.jks.b64` afterwards and keep `release.jks` in your backup.
+
+**One-time: the flasher page.** **Settings → Pages → Build and deployment → Source: GitHub
+Actions.** Each release then publishes the one-click flasher with that release's firmware.
 
 **Each release:**
 

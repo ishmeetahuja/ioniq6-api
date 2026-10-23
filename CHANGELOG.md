@@ -11,7 +11,16 @@ What changed in each version, in plain words with examples. Newest first.
 
 ## Unreleased
 
-- Nothing yet.
+**One-click flashing, and more boards for the tag.** ⚠️ Re-flash your tag with this version: the
+app and the tag got new Bluetooth IDs, so a v1.0.0 tag won't be found by the new app.
+
+- **[Web flasher](https://ishmeetahuja.github.io/ioniq6-api/):** plug the board in, click
+  *Connect & install* in Chrome or Edge, done. It detects the board and picks the right file.
+- **ESP32-C3 and ESP32-S3** boards are supported alongside the classic ESP32. Each release has a
+  file per board.
+  *Example:* a $6 ESP32-C3 SuperMini works as the tag; its blue LED blinks while waiting for
+  your phone.
+- The tag now shows up as **`WALKAWAY-TAG`** in Bluetooth scanners.
 
 ---
 

@@ -77,21 +77,25 @@ jobs:
           key: pio-${{ hashFiles('firmware/platformio.ini') }}
       - name: Install PlatformIO
         run: pip install platformio "esptool<5"
-      - name: Build firmware
+      - name: Build firmware (all boards)
         run: pio run -d firmware
-      - name: Merge into one file (flash at address 0x0)
+      - name: Merge each board into one file (flash at address 0x0)
         run: |
-          B=firmware/.pio/build/esp32dev
-          python -m esptool --chip esp32 merge_bin -o esp32-car-tag.bin \
-            --flash_mode dio --flash_freq 40m --flash_size 4MB \
-            0x1000 $B/bootloader.bin \
-            0x8000 $B/partitions.bin \
-            0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
-            0x10000 $B/firmware.bin
+          BOOT_APP0=~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin
+          merge() {  # env, chip, bootloader offset, output
+            B=firmware/.pio/build/$1
+            python -m esptool --chip $2 merge_bin -o $4 \
+              --flash_mode keep --flash_freq keep --flash_size keep \
+              $3 $B/bootloader.bin 0x8000 $B/partitions.bin 0xe000 $BOOT_APP0 0x10000 $B/firmware.bin
+          }
+          merge esp32dev esp32   0x1000 esp32-car-tag.bin
+          merge esp32c3  esp32c3 0x0    esp32c3-car-tag.bin
+          merge esp32s3  esp32s3 0x0    esp32s3-car-tag.bin
+          ls -la *.bin
       - uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: esp32-car-tag.bin
+          path: "*-car-tag.bin"
 
   server:
     runs-on: ubuntu-latest
@@ -173,7 +177,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ env.RELEASE_TAG }}
         run: |
-          sha256sum walkaway-lock.apk esp32-car-tag.bin > SHA256SUMS.txt
+          sha256sum walkaway-lock.apk *-car-tag.bin > SHA256SUMS.txt
           # This version's entry from CHANGELOG.md ("## v1.2.3 …" up to the next "---")
           awk -v t="$TAG" '
             /^## v/ { on = ($2 == t) }
@@ -185,8 +189,39 @@ jobs:
           ---
           **Install:** \`walkaway-lock.apk\` on your phone (over the old one; settings are kept).
           **Server:** \`bash install.sh\` in your install folder pulls \`${IMAGE}:latest\`.
-          **ESP32:** flash \`esp32-car-tag.bin\` at address 0x0 only when the notes above say so.
+          **ESP32:** easiest with the [one-click flasher](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/). By hand: the \`.bin\` for your board (\`esp32\`, \`esp32c3\` or \`esp32s3\`) at address 0x0. Only needed when the notes above say so.
           Checksums: \`SHA256SUMS.txt\`.
           EOF
-          gh release create "$TAG" walkaway-lock.apk esp32-car-tag.bin SHA256SUMS.txt \
+          gh release create "$TAG" walkaway-lock.apk *-car-tag.bin SHA256SUMS.txt \
             --repo "${{ github.repository }}" --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
+
+  # The one-click flasher (docs/flasher) on GitHub Pages, with this release's firmware.
+  # Needs Settings → Pages → Source: "GitHub Actions" (once).
+  flasher:
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.version != ''
+    needs: [firmware]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: docs/flasher
+      - uses: actions/download-artifact@v4
+        with:
+          name: firmware
+          path: _site
+      - name: Assemble the site
+        run: |
+          cp docs/flasher/index.html docs/flasher/manifest.json _site/
+          sed -i "s/\"VERSION\"/\"${RELEASE_TAG#v}\"/" _site/manifest.json
+          ls -la _site && cat _site/manifest.json
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -72,14 +72,14 @@ a few safety nets running. More detail: [How it works](docs/how-it-works.md).
 - A **Hyundai with BlueLink in Canada** (mybluelink.ca). Built and tested on an IONIQ 6; lock,
   climate and status should work on other BlueLink Canada models too.
 - An **Android phone**, Android 12 or newer.
-- An **ESP32 dev board** (the classic ESP32-WROOM-32 kind, about $10) and a **USB power bank**
+- An **ESP32 board** (classic ESP32, ESP32-C3 or ESP32-S3, about $6–15) and a **USB power bank**
   that doesn't switch itself off at low current. See [Hardware](docs/1-hardware.md).
 - A computer that's **always on and can run Docker**: Raspberry Pi 4/5, a NAS, Unraid, an old
   PC, or a small cloud server. It needs to be reachable over HTTPS (one port forward at home).
 
 ## Get started
 
-1. **[Flash the tag](docs/1-hardware.md)**: one file, from Chrome, no software to install.
+1. **[Flash the tag](docs/1-hardware.md)**: one click with the [web flasher](https://ishmeetahuja.github.io/ioniq6-api/), no software to install.
 2. **[Run the server](docs/2-server.md)**: one command; it sets up HTTPS and walks you through
    the BlueLink sign-in.
 3. **[Install the app](docs/3-app.md)**: download the APK, enter the server address and phone

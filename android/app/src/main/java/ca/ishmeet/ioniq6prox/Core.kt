@@ -11,7 +11,7 @@ import java.util.UUID
 
 /** Must match firmware/src/main.cpp. */
 object Ble {
-    val SERVICE_UUID: UUID = UUID.fromString("7805ea83-4cbf-4a8d-b043-9e4a07355fc4")
+    val SERVICE_UUID: UUID = UUID.fromString("2097e612-aa66-44a1-9bd2-72d554ba99e5")
 }
 
 /** Persistent settings (app-private SharedPreferences). */

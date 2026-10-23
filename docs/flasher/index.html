@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flash the tag · Walk-away Lock</title>
+<meta name="description" content="Install the Walk-away Lock tag firmware on an ESP32 from your browser.">
+<script type="module" src="https://unpkg.com/esp-web-tools@10.4.0/dist/web/install-button.js?module"></script>
+<style>
+  :root { --bg:#0D121B; --surface:#151C28; --raised:#1C2535; --hair:#263147; --text:#E9EEF5; --muted:#8C98AC; --glacier:#8FD3FF; --amber:#FFB547; --ink:#0A1622; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 16px 64px; }
+  a { color: var(--glacier); }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.5px; }
+  h1 span { color: var(--glacier); }
+  .lead { color: var(--muted); font-size: 18px; margin: 0 0 32px; }
+  .card { background: var(--surface); border-radius: 22px; padding: 22px; margin-top: 14px; }
+  ol { margin: 0; padding-left: 22px; }
+  li { margin: 8px 0; }
+  .go { display:flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  esp-web-install-button button { font: inherit; font-weight: 600; font-size: 17px; border: 0; border-radius: 999px; padding: 14px 26px; background: var(--glacier); color: var(--ink); cursor: pointer; }
+  esp-web-install-button button:hover { filter: brightness(1.06); }
+  .warn { color: var(--amber); }
+  .muted { color: var(--muted); }
+  .boards { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+  .boards div { background: var(--raised); border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+  .boards b { display:block; font-size: 15px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  footer { margin-top: 36px; font-size: 14px; color: var(--muted); }
+  code { background: var(--raised); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Flash the <span>tag</span></h1>
+  <p class="lead">Install the Walk-away Lock firmware on your ESP32 straight from this page. No software to install. Takes about a minute.</p>
+
+  <div class="card">
+    <h2>1 · Plug in the board</h2>
+    <p class="muted" style="margin:0">Use a <b>data</b> USB cable (some cables only charge) and a computer with <b>Chrome or Edge</b>.</p>
+    <div class="boards">
+      <div><b>ESP32</b>classic WROOM-32 DevKit: blue LED</div>
+      <div><b>ESP32-C3</b>e.g. C3 SuperMini: blue LED</div>
+      <div><b>ESP32-S3</b>e.g. S3-DevKitC-1: RGB LED in blue</div>
+    </div>
+  </div>
+
+  <div class="card go">
+    <h2>2 · Install</h2>
+    <esp-web-install-button manifest="manifest.json">
+      <button slot="activate">Connect &amp; install</button>
+      <span slot="unsupported" class="warn">This browser can't talk to USB devices. Open this page in Chrome or Edge on a computer.</span>
+      <span slot="not-allowed" class="warn">USB access needs a secure page (https).</span>
+    </esp-web-install-button>
+    <p class="muted" style="margin:0">Pick the board's port when asked. The right file for your board is chosen for you.</p>
+  </div>
+
+  <div class="card">
+    <h2>3 · Check it</h2>
+    <ol>
+      <li><b>Unplug the board and plug it back in.</b> The browser can hold it in flashing mode until it's power-cycled.</li>
+      <li>The LED <b>blinks every 2 seconds</b>: it's waiting for your phone. Once the app connects it stays on.</li>
+      <li>In the app: <b>Settings → ESP32 tag → Find</b>.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Not working?</h2>
+    <ol>
+      <li><b>No port shows up:</b> try another cable or USB port. Windows may need the <b>CP210x</b> or <b>CH340</b> driver (the chip name is printed near the board's USB port).</li>
+      <li><b>It won't connect:</b> hold the board's <b>BOOT</b> button while clicking Connect, and let go once it starts.</li>
+      <li><b>Prefer doing it by hand?</b> Download the <code>.bin</code> for your board from the <a href="https://github.com/ishmeetahuja/ioniq6-api/releases/latest">latest release</a> and flash it at address <code>0x0</code>.</li>
+    </ol>
+  </div>
+
+  <footer>
+    Part of <a href="https://github.com/ishmeetahuja/ioniq6-api">Walk-away Lock</a>: hardware guide in
+    <a href="https://github.com/ishmeetahuja/ioniq6-api/blob/main/docs/1-hardware.md">docs/1-hardware.md</a>.
+    Not affiliated with Hyundai. Flashing is powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a>.
+  </footer>
+</main>
+</body>
+</html>
