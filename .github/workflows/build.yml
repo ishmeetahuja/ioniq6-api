@@ -196,7 +196,8 @@ jobs:
             --repo "${{ github.repository }}" --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
 
   # The one-click flasher (docs/flasher) on GitHub Pages, with this release's firmware.
-  # Needs Settings → Pages → Source: "GitHub Actions" (once).
+  # Needs Settings → Pages → Source: "GitHub Actions" (once). To republish without a release:
+  # the "Flasher page" workflow.
   flasher:
     if: startsWith(github.ref, 'refs/tags/v') || inputs.version != ''
     needs: [firmware]
@@ -220,8 +221,12 @@ jobs:
           cp docs/flasher/index.html docs/flasher/manifest.json _site/
           sed -i "s/\"VERSION\"/\"${RELEASE_TAG#v}\"/" _site/manifest.json
           ls -la _site && cat _site/manifest.json
+      # A name per attempt, so "Re-run failed jobs" doesn't trip over the previous attempt's copy.
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+          name: github-pages-${{ github.run_attempt }}
       - id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}

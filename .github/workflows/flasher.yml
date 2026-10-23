@@ -1,0 +1,54 @@
+name: Flasher page
+
+# Publishes the one-click flasher (docs/flasher) to GitHub Pages with the firmware from a release.
+# Releases do this automatically (build.yml). Run this by hand to (re)publish it any time:
+# Actions → Flasher page → Run workflow. Needs Settings → Pages → Source: "GitHub Actions" (once).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release to publish, e.g. v1.0.1 (leave empty for the latest)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: docs/flasher
+      - name: Get the release's firmware
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          T="${TAG:-$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)}"
+          mkdir -p _site
+          gh release download "$T" --repo "$GITHUB_REPOSITORY" --pattern '*-car-tag.bin' --dir _site
+          cp docs/flasher/index.html docs/flasher/manifest.json _site/
+          sed -i "s/\"VERSION\"/\"${T#v}\"/" _site/manifest.json
+          ls -la _site && cat _site/manifest.json
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          name: github-pages-${{ github.run_attempt }}
+      - id: deploy
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
