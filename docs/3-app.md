@@ -3,6 +3,10 @@
 Android 12 or newer. The app isn't on the Play Store: Google's rules for background Bluetooth and
 location make that impractical for a hobby project. You install the APK directly.
 
+The public application id is `io.github.ishmeetahuja.walkawaylock` and the launcher name is
+**Walk-away Lock**. Server address and tokens are blank until you type them. iPhone installs are
+not available yet: see the iPhone section of the [README](../README.md).
+
 ## Install
 
 **Option A: download it**

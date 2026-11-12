@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.Manifest
 import android.app.Activity
@@ -28,16 +28,16 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import ca.ishmeet.ioniq6prox.Sheets.sheet
-import ca.ishmeet.ioniq6prox.Ui.card
-import ca.ishmeet.ioniq6prox.Ui.darkWindow
-import ca.ishmeet.ioniq6prox.Ui.dp
-import ca.ishmeet.ioniq6prox.Ui.dpf
-import ca.ishmeet.ioniq6prox.Ui.field
-import ca.ishmeet.ioniq6prox.Ui.pillButton
-import ca.ishmeet.ioniq6prox.Ui.pressable
-import ca.ishmeet.ioniq6prox.Ui.row
-import ca.ishmeet.ioniq6prox.Ui.text
+import io.github.ishmeetahuja.walkawaylock.Sheets.sheet
+import io.github.ishmeetahuja.walkawaylock.Ui.card
+import io.github.ishmeetahuja.walkawaylock.Ui.darkWindow
+import io.github.ishmeetahuja.walkawaylock.Ui.dp
+import io.github.ishmeetahuja.walkawaylock.Ui.dpf
+import io.github.ishmeetahuja.walkawaylock.Ui.field
+import io.github.ishmeetahuja.walkawaylock.Ui.pillButton
+import io.github.ishmeetahuja.walkawaylock.Ui.pressable
+import io.github.ishmeetahuja.walkawaylock.Ui.row
+import io.github.ishmeetahuja.walkawaylock.Ui.text
 
 /** Everything that sets the app up: server, tokens, car, photo, ESP32, distance, background, log. */
 class SettingsActivity : Activity() {
@@ -175,7 +175,7 @@ class SettingsActivity : Activity() {
             addView(wifiEdit, Ui.lp(top = dp(6)))
             label("Home location: latitude, longitude")
             val spot = prefs.homeLat?.let { "$it, ${prefs.homeLon}" } ?: ""
-            spotEdit = field("43.65107, -79.34702", spot, InputType.TYPE_CLASS_TEXT)
+            spotEdit = field("12.34567, -98.76543", spot, InputType.TYPE_CLASS_TEXT)
             addView(spotEdit, Ui.lp(top = dp(6)))
             addView(row(dp(10), pillButton("Use current Wi-Fi") { useCurrentWifi() }, pillButton("Use current location") { useCurrentSpot() }), Ui.lp(top = dp(12)))
             label("“At the car”: signal at least (dBm). Stand at the driver's door and use the current signal")
@@ -256,7 +256,7 @@ class SettingsActivity : Activity() {
     private fun storeHome(quiet: Boolean = false): Boolean {
         val spotText = spotEdit.text.toString().trim()
         val spot = if (spotText.isEmpty()) null else Home.parse(spotText)
-        if (spotText.isNotEmpty() && spot == null) { bar.show("Location should look like: 43.65107, -79.34702", Ui.CORAL); return false }
+        if (spotText.isNotEmpty() && spot == null) { bar.show("Location should look like: 12.34567, -98.76543", Ui.CORAL); return false }
         val atCarText = atCarEdit.text.toString().trim()
         val atCar = if (atCarText.isEmpty()) null else atCarText.toIntOrNull()
         if (atCarText.isNotEmpty() && (atCar == null || atCar !in -100..-30)) { bar.show("“At the car” should be between -100 and -30", Ui.CORAL); return false }

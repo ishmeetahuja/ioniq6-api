@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.Manifest
 import android.app.Activity
@@ -35,17 +35,17 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
-import ca.ishmeet.ioniq6prox.Sheets.sheet
-import ca.ishmeet.ioniq6prox.Ui.card
-import ca.ishmeet.ioniq6prox.Ui.chip
-import ca.ishmeet.ioniq6prox.Ui.darkWindow
-import ca.ishmeet.ioniq6prox.Ui.dp
-import ca.ishmeet.ioniq6prox.Ui.dpf
-import ca.ishmeet.ioniq6prox.Ui.pillButton
-import ca.ishmeet.ioniq6prox.Ui.pressable
-import ca.ishmeet.ioniq6prox.Ui.row
-import ca.ishmeet.ioniq6prox.Ui.setChip
-import ca.ishmeet.ioniq6prox.Ui.text
+import io.github.ishmeetahuja.walkawaylock.Sheets.sheet
+import io.github.ishmeetahuja.walkawaylock.Ui.card
+import io.github.ishmeetahuja.walkawaylock.Ui.chip
+import io.github.ishmeetahuja.walkawaylock.Ui.darkWindow
+import io.github.ishmeetahuja.walkawaylock.Ui.dp
+import io.github.ishmeetahuja.walkawaylock.Ui.dpf
+import io.github.ishmeetahuja.walkawaylock.Ui.pillButton
+import io.github.ishmeetahuja.walkawaylock.Ui.pressable
+import io.github.ishmeetahuja.walkawaylock.Ui.row
+import io.github.ishmeetahuja.walkawaylock.Ui.setChip
+import io.github.ishmeetahuja.walkawaylock.Ui.text
 import java.util.concurrent.Executors
 
 /** Home: the car, its state, the controls, and the walk-away lock panel. Setup lives in Settings. */

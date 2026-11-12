@@ -1,0 +1,6 @@
+# Public bundle id. The upload lane refuses a provisioning profile for any other id,
+# so a personal build cannot be published from this Fastfile by accident.
+app_identifier("io.github.ishmeetahuja.walkawaylock")
+
+# Upload uses an App Store Connect API key (ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH).
+# No Apple ID password is read.

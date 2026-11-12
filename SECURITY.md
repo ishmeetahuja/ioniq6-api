@@ -1,6 +1,7 @@
 # Security
 
-This project controls a car, so security reports are very welcome.
+This project is unofficial. It is not affiliated with, endorsed by, or supported by Hyundai.
+It can lock a car, so security reports are very welcome.
 
 ## Reporting a problem
 

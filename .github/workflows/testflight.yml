@@ -1,0 +1,85 @@
+name: iOS TestFlight
+
+# Uploads the public iOS app to TestFlight.
+# The check job always runs and does not need secrets. The upload job runs only when
+# ios/WalkawayLock.xcodeproj exists and every secret below is set. Until then it is skipped
+# and this workflow stays green. See CONTRIBUTING.md for the secret names.
+# This workflow does not create secrets, tags or releases.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      upload: ${{ steps.gate.outputs.upload }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ruby for the Fastlane syntax check
+        run: command -v ruby >/dev/null || { sudo apt-get update && sudo apt-get install -y ruby; }
+      - name: Fastlane and upload script parse
+        run: |
+          ruby -c fastlane/Fastfile
+          bash -n fastlane/testflight.sh
+      - name: Public ids agree
+        run: |
+          set -euo pipefail
+          ID=$(grep '^applicationId=' config/public.properties | cut -d= -f2- | tr -d '[:space:]')
+          grep -q "app_identifier(\"$ID\")" fastlane/Appfile
+          test -n "$ID"
+          echo "Public application id: $ID"
+      - id: gate
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          IOS_PROJECT: ${{ vars.IOS_PROJECT }}
+        run: |
+          set -euo pipefail
+          echo "upload=false" >> "$GITHUB_OUTPUT"
+          PROJECT="${IOS_PROJECT:-ios/WalkawayLock.xcodeproj}"
+          missing=0
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8_BASE64 APPLE_TEAM_ID IOS_DIST_CERT_P12_BASE64 IOS_DIST_CERT_PASSWORD IOS_PROFILE_BASE64; do
+            if [ -z "${!name}" ]; then
+              echo "::notice title=TestFlight skipped::GitHub secret ${name} is not set."
+              missing=1
+            fi
+          done
+          if [ ! -d "$PROJECT" ]; then
+            echo "::notice title=TestFlight skipped::No Xcode project at ${PROJECT}. Add the public iOS app before an upload can run."
+            missing=1
+          fi
+          if [ "$missing" -eq 0 ]; then
+            echo "upload=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  upload:
+    needs: check
+    if: needs.check.outputs.upload == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          IOS_PROJECT: ${{ vars.IOS_PROJECT }}
+          IOS_SCHEME: ${{ vars.IOS_SCHEME }}
+        run: bash fastlane/testflight.sh

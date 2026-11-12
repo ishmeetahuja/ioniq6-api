@@ -3,15 +3,33 @@ android/.gradle/
 android/build/
 android/app/build/
 android/local.properties
+android/keystore.properties
 *.iml
 .idea/
+
 # PlatformIO
 firmware/.pio/
 firmware/.vscode/
 
+# iOS
+ios/build/
+ios/DerivedData/
+**/xcuserdata/
+*.ipa
+*.dSYM.zip
+
+# Fastlane output. fastlane/.env is covered by **/.env below.
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+fastlane/screenshots/
+
 # Secrets never belong in the repo
 *.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
 keystore.properties
 **/.env
 server/data/
-*.keystore

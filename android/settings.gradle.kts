@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "ioniq6-proximity"
+rootProject.name = "walkaway-lock"
 include(":app")

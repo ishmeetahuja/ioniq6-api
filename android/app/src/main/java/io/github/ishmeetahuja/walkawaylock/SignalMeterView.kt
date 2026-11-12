@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.content.Context
 import android.graphics.Canvas

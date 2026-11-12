@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -11,7 +11,7 @@ import android.graphics.RectF
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
-import ca.ishmeet.ioniq6prox.Ui.dpf
+import io.github.ishmeetahuja.walkawaylock.Ui.dpf
 
 /**
  * Round speedometer: a 240° arc that fills with the speed, the number in the middle. Grey "0" when

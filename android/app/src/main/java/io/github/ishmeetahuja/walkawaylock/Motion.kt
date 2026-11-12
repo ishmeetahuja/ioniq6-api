@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -16,7 +16,7 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
-import ca.ishmeet.ioniq6prox.Ui.dpf
+import io.github.ishmeetahuja.walkawaylock.Ui.dpf
 
 /** A spinning arc, drawn inside a button while its command runs. */
 class RingView(c: Context, color: Int = Ui.TEXT) : View(c) {
