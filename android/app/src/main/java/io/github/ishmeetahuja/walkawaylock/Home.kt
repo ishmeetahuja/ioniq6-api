@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.Manifest
 import android.content.Context
@@ -89,7 +89,7 @@ object Home {
         return if (w != null) false else null   // on some other Wi-Fi → not home
     }
 
-    /** "43.65107, -79.34702" → pair, or null if it doesn't parse. */
+    /** "12.34567, -98.76543" → pair, or null if it doesn't parse. */
     fun parse(s: String): Pair<Double, Double>? {
         val parts = s.split(',', ' ', ';').map { it.trim() }.filter { it.isNotEmpty() }
         if (parts.size != 2) return null

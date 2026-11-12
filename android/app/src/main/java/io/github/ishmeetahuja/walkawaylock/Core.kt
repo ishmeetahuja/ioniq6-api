@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.content.Context
 import android.util.Log
@@ -16,7 +16,7 @@ object Ble {
 
 /** Persistent settings (app-private SharedPreferences). */
 class Prefs(c: Context) {
-    private val sp = c.getSharedPreferences("prox", Context.MODE_PRIVATE)
+    private val sp = c.getSharedPreferences("walkaway", Context.MODE_PRIVATE)
 
     var serverUrl: String
         get() = sp.getString("url", "") ?: ""

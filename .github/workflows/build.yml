@@ -1,7 +1,7 @@
 name: Build
 
 # Every push and pull request builds and tests everything.
-# A release — GitHub Release (APK + firmware + checksums) and the server image as :1.2.3 and :latest —
+# A release — GitHub Release (APK + AAB + firmware + checksums) and the server image as :1.2.3 and :latest —
 # happens when you either push a tag "v1.2.3", or click Actions → Build → Run workflow and type a
 # version. Pushes to main publish the server image as :edge only.
 
@@ -50,19 +50,24 @@ jobs:
           else
             echo "::notice::No signing secrets: building with the debug key (fine for testing)."
           fi
-      - name: Build APK
+      - name: Build APK and AAB
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -n "$RELEASE_TAG" ]; then export APP_VERSION="${RELEASE_TAG#v}"; fi
-          gradle -p android assembleRelease --stacktrace
+          gradle -p android assembleRelease bundleRelease --stacktrace
           cp android/app/build/outputs/apk/release/app-release.apk walkaway-lock.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab walkaway-lock.aab
       - uses: actions/upload-artifact@v4
         with:
           name: apk
           path: walkaway-lock.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aab
+          path: walkaway-lock.aab
 
   firmware:
     runs-on: ubuntu-latest
@@ -171,13 +176,16 @@ jobs:
           name: apk
       - uses: actions/download-artifact@v4
         with:
+          name: aab
+      - uses: actions/download-artifact@v4
+        with:
           name: firmware
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ env.RELEASE_TAG }}
         run: |
-          sha256sum walkaway-lock.apk *-car-tag.bin > SHA256SUMS.txt
+          sha256sum walkaway-lock.apk walkaway-lock.aab *-car-tag.bin > SHA256SUMS.txt
           # This version's entry from CHANGELOG.md ("## v1.2.3 …" up to the next "---")
           awk -v t="$TAG" '
             /^## v/ { on = ($2 == t) }
@@ -187,12 +195,12 @@ jobs:
           cat >> notes.md <<EOF
 
           ---
-          **Install:** \`walkaway-lock.apk\` on your phone (over the old one; settings are kept).
+          **Install:** \`walkaway-lock.apk\` on your phone. \`walkaway-lock.aab\` is the Android App Bundle, for a Play upload; phones install the APK.
           **Server:** \`bash install.sh\` in your install folder pulls \`${IMAGE}:latest\`.
           **ESP32:** easiest with the [one-click flasher](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/). By hand: the \`.bin\` for your board (\`esp32\`, \`esp32c3\` or \`esp32s3\`) at address 0x0. Only needed when the notes above say so.
           Checksums: \`SHA256SUMS.txt\`.
           EOF
-          gh release create "$TAG" walkaway-lock.apk *-car-tag.bin SHA256SUMS.txt \
+          gh release create "$TAG" walkaway-lock.apk walkaway-lock.aab *-car-tag.bin SHA256SUMS.txt \
             --repo "${{ github.repository }}" --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
 
   # The one-click flasher (docs/flasher) on GitHub Pages, with this release's firmware.

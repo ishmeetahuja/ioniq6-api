@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.Manifest
 import android.app.Notification
@@ -74,12 +74,12 @@ import java.util.concurrent.Executors
 class ProximityService : Service() {
 
     companion object {
-        const val ACTION_ARM = "ca.ishmeet.ioniq6prox.ARM"
-        const val ACTION_PAUSE = "ca.ishmeet.ioniq6prox.PAUSE"
-        const val ACTION_RESUME = "ca.ishmeet.ioniq6prox.RESUME"
-        const val ACTION_CHECK_SERVER = "ca.ishmeet.ioniq6prox.CHECK"
-        const val ACTION_APPROACH_UNLOCK = "ca.ishmeet.ioniq6prox.APPROACH_UNLOCK"
-        const val ACTION_APPROACH_CLIMATE = "ca.ishmeet.ioniq6prox.APPROACH_CLIMATE"
+        const val ACTION_ARM = BuildConfig.APPLICATION_ID + ".ARM"
+        const val ACTION_PAUSE = BuildConfig.APPLICATION_ID + ".PAUSE"
+        const val ACTION_RESUME = BuildConfig.APPLICATION_ID + ".RESUME"
+        const val ACTION_CHECK_SERVER = BuildConfig.APPLICATION_ID + ".CHECK"
+        const val ACTION_APPROACH_UNLOCK = BuildConfig.APPLICATION_ID + ".APPROACH_UNLOCK"
+        const val ACTION_APPROACH_CLIMATE = BuildConfig.APPLICATION_ID + ".APPROACH_CLIMATE"
         private const val APPROACH_ID = 4
         private const val APPROACH_CHANNEL = "approach"
         private const val APPROACH_AWAY_MS = 5 * 60_000L    // away from the car at least this long…
@@ -1091,7 +1091,7 @@ class ProximityService : Service() {
 
     private fun createChannels() {
         val nm = getSystemService(NotificationManager::class.java) ?: return
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Proximity monitor", NotificationManager.IMPORTANCE_LOW).apply {
+        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Walk-away lock", NotificationManager.IMPORTANCE_LOW).apply {
             description = "Shows that walk-away auto-lock is running"
         })
         nm.createNotificationChannel(NotificationChannel(APPROACH_CHANNEL, "Walking to the car", NotificationManager.IMPORTANCE_HIGH).apply {

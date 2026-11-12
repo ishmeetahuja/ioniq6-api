@@ -18,11 +18,13 @@ welcome. Please be kind and patient: this is a hobby project.
 ## Project layout
 
 ```
-android/    the app (Kotlin, no external libraries)
-firmware/   the ESP32 tag (Arduino / PlatformIO)
-server/     BlueLink Canada client, HTTP API + auto-lock (Node 18+, no dependencies), installer
-server/test the server's end-to-end tests against a mock BlueLink
-docs/       user guides
+android/     the app (Kotlin, no external libraries)
+firmware/    the ESP32 tag (Arduino / PlatformIO)
+server/      BlueLink Canada client, HTTP API + auto-lock (Node 18+, no dependencies), installer
+server/test  the server's end-to-end tests against a mock BlueLink
+config/      public application id and display name (not secrets)
+fastlane/    TestFlight upload. Secrets stay in the environment.
+docs/        user guides
 ```
 
 ## Building
@@ -34,16 +36,21 @@ bash server/test/run.sh          # 118 end-to-end tests against a mock BlueLink,
 cd server && docker build -t ioniq6-api .
 ```
 
-**App:** open `android/` in Android Studio, or `gradle -p android assembleRelease` with Gradle 8.10
-and JDK 17. Without signing secrets the APK is signed with the debug key: fine for testing, but it
-won't install over an official release (uninstall first).
+**App:** open `android/` in Android Studio, or `gradle -p android assembleRelease bundleRelease`
+with Gradle 8.10 and JDK 17. The application id and the launcher name come from
+`config/public.properties` (`io.github.ishmeetahuja.walkawaylock`, **Walk-away Lock**). Keep that
+id for this public app. Without signing secrets the APK and AAB are signed with the debug key:
+fine for testing, but they won't install over an official release (uninstall first). For a local
+release signature, copy `android/keystore.properties.example` to `android/keystore.properties`.
 
 **Firmware:** with [PlatformIO](https://platformio.org/), `pio run -d firmware -e esp32dev -t upload`
 (or `-e esp32c3` / `-e esp32s3`). Another board? Add an `[env:…]` to `firmware/platformio.ini` with
 its LED pin (`LED_PIN`, `LED_ACTIVE_LOW`, `LED_RGB`) and a line in `docs/flasher/manifest.json`.
 The tag's Bluetooth IDs in `firmware/src/main.cpp` must match `Ble.SERVICE_UUID` in the app.
 
-Every push and PR runs all of this on GitHub Actions.
+Every push and PR runs the server tests, the Android APK and AAB, and the firmware build on
+GitHub Actions. The iOS TestFlight workflow also runs, and skips the upload until an Xcode
+project and the secrets below exist.
 
 ## Pull requests
 
@@ -71,7 +78,34 @@ Then in GitHub: **Settings → Secrets and variables → Actions → New reposit
 | `ANDROID_KEY_PASSWORD` | the same password |
 | `ANDROID_KEY_ALIAS` | `walkaway` |
 
-Delete `release.jks.b64` afterwards and keep `release.jks` in your backup.
+Delete `release.jks.b64` afterwards and keep `release.jks` in your backup. The same keystore signs
+`walkaway-lock.apk` and `walkaway-lock.aab`. Both are workflow artifacts. A phone installs the APK.
+
+**One-time: TestFlight.** The public iOS bundle id is the `applicationId` in
+`config/public.properties` (`io.github.ishmeetahuja.walkawaylock`). Register that id in App Store
+Connect as its own app. The workflow refuses a provisioning profile for any other id. Add the
+Xcode project at `ios/WalkawayLock.xcodeproj` with scheme `WalkawayLock` (or set repository
+variables `IOS_PROJECT` and `IOS_SCHEME`). Then create these Actions secrets. Do not commit the
+key, the certificate or the profile. `fastlane/.env.example` lists the same names for a local run.
+
+| Secret | Value |
+|---|---|
+| `ASC_KEY_ID` | App Store Connect API key id |
+| `ASC_ISSUER_ID` | the issuer id shown above the keys |
+| `ASC_KEY_P8_BASE64` | `base64 -w0 AuthKey_XXXX.p8` (the `.p8` is downloaded once) |
+| `APPLE_TEAM_ID` | the 10-character Team ID |
+| `IOS_DIST_CERT_P12_BASE64` | Apple Distribution certificate, exported as `.p12`, then base64 |
+| `IOS_DIST_CERT_PASSWORD` | the password for that `.p12` |
+| `IOS_PROFILE_BASE64` | App Store provisioning profile for `io.github.ishmeetahuja.walkawaylock`, base64 |
+
+The API key needs the **App Manager** role. The upload goes to internal TestFlight only
+(`skip_submission`, no external group). Sending a build to external testers, and publishing the
+public link, is done in App Store Connect after the upload. Until the project and these secrets
+exist, **iOS TestFlight** stays green and skips the upload.
+
+Also, once: a 1024×1024 icon, the privacy policy URL (this repo's `PRIVACY.md` hosted somewhere
+App Store Connect can fetch), and the export-compliance answer. The in-repo launcher art is the
+Android vector in `android/app/src/main/res/drawable/ic_launcher_fg.xml`.
 
 **One-time: the flasher page.** **Settings → Pages → Build and deployment → Source: GitHub
 Actions.** Each release then publishes the one-click flasher with that release's firmware.
@@ -82,5 +116,7 @@ Actions.** Each release then publishes the one-click flasher with that release's
    from that section).
 2. **Actions → Build → Run workflow**, type the version (`1.2.3`), Run. Or push a tag `v1.2.3`.
 
-It builds and tests everything, publishes the GitHub Release (APK, firmware, checksums), and the
-server image as `:1.2.3` and `:latest`, which is what `install.sh` pulls.
+It builds and tests everything, publishes the GitHub Release (APK, AAB, firmware, checksums), and the
+server image as `:1.2.3` and `:latest`, which is what `install.sh` pulls. Pushing the tag is what
+creates the release. The TestFlight workflow uploads on that tag only when its secrets and the
+Xcode project are present.

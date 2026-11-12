@@ -1,4 +1,4 @@
-package ca.ishmeet.ioniq6prox
+package io.github.ishmeetahuja.walkawaylock
 
 import android.app.Activity
 import android.app.Dialog
@@ -11,9 +11,9 @@ import android.view.WindowInsets
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import ca.ishmeet.ioniq6prox.Ui.dp
-import ca.ishmeet.ioniq6prox.Ui.dpf
-import ca.ishmeet.ioniq6prox.Ui.text
+import io.github.ishmeetahuja.walkawaylock.Ui.dp
+import io.github.ishmeetahuja.walkawaylock.Ui.dpf
+import io.github.ishmeetahuja.walkawaylock.Ui.text
 
 /** Bottom sheets and an in-app message bar, styled to match (instead of stock dialogs/toasts). */
 object Sheets {

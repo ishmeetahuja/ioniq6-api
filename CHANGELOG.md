@@ -11,7 +11,18 @@ What changed in each version, in plain words with examples. Newest first.
 
 ## Unreleased
 
-- Nothing yet.
+- **Public app id.** The Android app installs as `io.github.ishmeetahuja.walkawaylock`, named
+  **Walk-away Lock**. It sits beside any build that uses a different id. If you installed an
+  earlier public APK (`io.github.ishmeetahuja.ioniq6`), uninstall that copy first; its settings
+  do not move over.
+  *Example:* the home-screen name comes from `config/public.properties`, and the server address
+  is still something you type in. Nothing is filled in for you.
+- **Android App Bundle.** The Build workflow now uploads `walkaway-lock.aab` next to
+  `walkaway-lock.apk`. Phones keep installing the APK.
+- **TestFlight workflow.** `.github/workflows/testflight.yml` uploads an iOS build when the
+  maintainer adds `ios/WalkawayLock.xcodeproj` and the App Store Connect secrets in
+  CONTRIBUTING.md. With either of those missing, the workflow passes and skips the upload.
+  There is no iOS app to install yet.
 
 ---
 

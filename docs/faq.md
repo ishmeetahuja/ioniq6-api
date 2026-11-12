@@ -15,7 +15,10 @@ on the model. It's only been tested on an IONIQ 6, so please report how it goes.
 has several cars, set `BLUELINK_VIN` in the server's `.env`.
 
 **iPhone?**
-No. iOS doesn't let a sideloaded app keep watching a Bluetooth device in the background like this.
+Not yet. A sideloaded iOS app cannot keep watching Bluetooth in the background. A TestFlight
+build signed with a paid Apple Developer account can. This repository has the upload workflow
+and the public bundle id (`io.github.ishmeetahuja.walkawaylock`), and it does not yet contain
+the iOS app, so there is no TestFlight link to join. The Android APK is the installable build.
 
 **Why do I need a server? Can't the app talk to Hyundai directly?**
 It could, but the server is what makes it reliable: it keeps one long-lived sign-in (Hyundai
